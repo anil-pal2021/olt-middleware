@@ -1,14 +1,18 @@
 from flask import Flask
 import firebase_admin
+import os
+import json
 
 from firebase_admin import credentials
 from firebase_admin import firestore
 
 app = Flask(__name__)
 
-cred = credentials.Certificate(
-    "firebase_key.json"
-)
+firebase_json = os.environ.get("FIREBASE_KEY")
+
+firebase_dict = json.loads(firebase_json)
+
+cred = credentials.Certificate(firebase_dict)
 
 firebase_admin.initialize_app(cred)
 
@@ -31,13 +35,12 @@ def sync():
         "serial": "HWTC12345678",
         "ponPort": "1/1/1",
         "rxPower": "-24.5 dBm",
+        "txPower": "2.1 dBm",
         "status": "online",
-        "authorized": True,
+        "oltId": "OLT001"
     }
 
-    db.collection("onus").document(
-        onu["serial"]
-    ).set(onu)
+    db.collection("onus").add(onu)
 
     return {
         "message": "ONU Synced Successfully"
